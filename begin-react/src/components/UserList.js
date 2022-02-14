@@ -1,0 +1,36 @@
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+
+const User = ({ user, onRemove, onToggle }) => {
+  useEffect(() => {
+    console.log('user 나타남');
+    console.log(user);
+    return () => {
+      console.log('user 사라짐');
+      console.log(user);
+    };
+  }, [user]);
+  return (
+    <div>
+      <b
+        style={{ cursor: 'pointer', color: user.active ? 'green' : 'black' }}
+        onClick={() => onToggle(user.id)}
+      >
+        {user.username}
+      </b>{' '}
+      <span>({user.email})</span>
+      <button onClick={() => onRemove(user.id)}>삭제</button>
+    </div>
+  );
+};
+
+const UserList = ({ users, onRemove, onToggle }) => {
+  return (
+    <div>
+      {users.map((user) => (
+        <User user={user} key={user.id} onRemove={onRemove} onToggle={onToggle} />
+      ))}
+    </div>
+  );
+};
+
+export default UserList;
