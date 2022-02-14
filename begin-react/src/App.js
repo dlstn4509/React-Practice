@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useMemo, useCallback } from 'react';
 import Hello from './components/Hello';
 import Wrapper from './components/Wrapper';
 import Counter from './components/Counter';
@@ -13,13 +13,14 @@ const App = () => {
     email: '',
   });
   const { username, email } = inputs;
-  const onChange = (e) => {
+
+  const onChange = useCallback((e) => {
     const { name, value } = e.target;
-    setInputs({
+    setInputs((inputs) => ({
       ...inputs,
       [name]: value,
-    });
-  };
+    }));
+  }, []);
 
   const [users, setUsers] = useState([
     {
@@ -42,32 +43,46 @@ const App = () => {
     },
   ]);
   const nextId = useRef(4);
-  const onCreate = () => {
+  const onCreate = useCallback(() => {
     const user = {
       id: nextId.current,
       username,
       email,
     };
-    setUsers([...users, user]);
+    setUsers((users) => {
+      user.concat(users);
+    });
     setInputs({
       username: '',
       email: '',
     });
     nextId.current += 1;
+  }, [username, email]);
+
+  const onRemove = useCallback((id) => {
+    setUsers((users) => {
+      users.filter((user) => user.id !== id);
+    });
+  }, []);
+
+  const onToggle = useCallback((id) => {
+    setUsers((users) => {
+      users.map((user) => (user.id === id ? { ...user, active: !user.active } : user));
+    });
+  }, []);
+
+  const countActiveUser = (users) => {
+    console.log('active user 세는 중');
+    return users.filter((user) => user.active).length;
   };
 
-  const onRemove = (id) => {
-    setUsers(users.filter((user) => user.id !== id));
-  };
-
-  const onToggle = (id) => {
-    setUsers(users.map((user) => (user.id === id ? { ...user, active: !user.active } : user)));
-  };
+  const count = useMemo(() => countActiveUser(users), [users]);
 
   return (
     <>
       <CreateUser username={username} email={email} onChange={onChange} onCreate={onCreate} />
       <UserList users={users} onRemove={onRemove} onToggle={onToggle} />
+      <div>활성사용자수 : {count}</div>
     </>
   );
 };
